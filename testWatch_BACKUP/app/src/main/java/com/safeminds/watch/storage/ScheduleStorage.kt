@@ -1,0 +1,46 @@
+package com.safeminds.watch.storage
+
+import android.content.Context
+import android.content.SharedPreferences
+import androidx.core.content.edit
+import com.safeminds.watch.scheduler.ScheduleModel
+
+object ScheduleStorage {
+
+   private const val PREFERENCE_NAME="SchedulePreferences"
+           private const val NIGHT_START_KEY="nightStartTime"
+           private const val NIGHT_END_KEY="nightEndTime"
+           private const val IS_HOURLY_ENABLED_KEY="isHourlyEnabled"
+           private const val HOURLY_CHECK_DURATION_KEY="hourlyCheckDuration"
+            private const val LAST_HOURLY_CHECK_TIME="lastHourlyCheckTime"
+
+           private fun preferences(context: Context): SharedPreferences {
+       return context.getSharedPreferences(PREFERENCE_NAME, Context.MODE_PRIVATE)
+   }
+
+   fun getSchedule(context: Context): ScheduleModel {
+   val sharedPrefs = preferences(context)
+   return ScheduleModel(
+       nightStartTime = sharedPrefs.getInt(NIGHT_START_KEY, 22 * 60),
+       nightEndTime = sharedPrefs.getInt(NIGHT_END_KEY, 4*60+30),
+       isHourlyEnabled = sharedPrefs.getBoolean(IS_HOURLY_ENABLED_KEY, true),
+       hourlyCheckDuration = sharedPrefs.getInt(HOURLY_CHECK_DURATION_KEY, 3)
+   )
+}
+
+fun updateSchedule(context: Context, configuration: ScheduleModel) {
+    preferences(context).edit {
+        putInt(NIGHT_START_KEY, configuration.nightStartTime)
+            .putInt(NIGHT_END_KEY, configuration.nightEndTime)
+            .putBoolean(IS_HOURLY_ENABLED_KEY, configuration.isHourlyEnabled)
+            .putInt(HOURLY_CHECK_DURATION_KEY, configuration.hourlyCheckDuration)
+    }
+}
+    fun getLastHourlyCheck(context: Context): String? {
+        return preferences(context).getString(LAST_HOURLY_CHECK_TIME, null)
+    }
+    fun setLastHourlyCheck(context: Context, timeSlot: String) {
+        preferences(context).edit().putString(LAST_HOURLY_CHECK_TIME, timeSlot)
+            .apply()
+    }
+}
